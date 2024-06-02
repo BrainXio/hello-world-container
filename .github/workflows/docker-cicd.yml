@@ -60,8 +60,13 @@ jobs:
         with:
           bot_token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           chat_id: ${{ secrets.TELEGRAM_CHAT_ID }}
-          message: "🛠 Develop build started!"
-
+          message: |
+            🛠 Develop build started!
+            🏃 Run ID: `${{ github.run_id }}`
+            🔢 Run Number: `${{ github.run_number }}`
+            🔁 Run Attempt: `${{ github.run_attempt }}`
+            👤 Actor: `${{ github.actor }}`
+            
       - name: Checkout code
         uses: actions/checkout@v4
         with:
@@ -99,8 +104,6 @@ jobs:
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:${{ env.IMAGE_TAG }}
           cache-from: type=gha
-          build-args: |
-            OLLAMA_VERSION=${{ env.IMAGE_TAG }}
 
       - name: Run Development Tests Placeholder
         run: echo "Running development tests... Replace with actual test commands."
@@ -125,7 +128,12 @@ jobs:
         with:
           bot_token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           chat_id: ${{ secrets.TELEGRAM_CHAT_ID }}
-          message: "🛠 Production build started!"
+          message: |
+            🛠 Production build started!
+            🏃 Run ID: `${{ github.run_id }}`
+            🔢 Run Number: `${{ github.run_number }}`
+            🔁 Run Attempt: `${{ github.run_attempt }}`
+            👤 Actor: `${{ github.actor }}`
 
       - name: Checkout code
         uses: actions/checkout@v4
