@@ -7,11 +7,15 @@ on:
       - 'feature/*'
       - 'hotfix/*'
       - 'bugfix/*'
+    paths-ignore:
+      - '*.md'
     tags:
       - 'v*'
   pull_request:
     branches:
       - main
+    paths-ignore:
+      - '*.md'
   workflow_dispatch:
 
 
