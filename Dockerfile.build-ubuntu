@@ -5,7 +5,7 @@ FROM ${IMAGE_BASE}:${IMAGE_VERSION} AS ubuntu-builder
 
 # Install Python and build dependencies
 RUN apt-get update && \
-    apt-get install -y python3-dev python3-pip python3-venv build-essential && \
+    apt-get install -y python3-venv python3-pip build-essential && \
     rm -rf /var/lib/apt/lists/*
 
 # Set the working directory

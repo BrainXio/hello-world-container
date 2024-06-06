@@ -2,8 +2,6 @@ ARG IMAGE_BASE=ubuntu
 ARG IMAGE_VERSION=20.04
 ARG BUILDER_IMAGE
 
-FROM ${BUILDER_IMAGE} as base
-
 FROM ${IMAGE_BASE}:${IMAGE_VERSION}
 
 # Install Python runtime
@@ -14,8 +12,8 @@ RUN apt-get update && \
 # Set the working directory
 WORKDIR /app
 
-# Copy the application source code and virtual environment from the builder image
-COPY --from=base /app /app
+# Copy the application source code and virtual environment from the build stage
+COPY --from=${BUILDER_IMAGE} /app /app
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
@@ -23,8 +21,8 @@ ENV PATH="/app/venv/bin:$PATH"
 
 # Set the user to use when running this image
 ARG APP_USER=codespace
-RUN useradd -ms /bin/bash $APP_USER
+RUN useradd -m -d /app -s /bin/bash $APP_USER
 USER $APP_USER
 
 # Run the application
-CMD ["python3", "app/main.py"]
+CMD ["python3", "main.py"]
