@@ -33,7 +33,7 @@ jobs:
           bot_token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           chat_id: ${{ secrets.TELEGRAM_CHAT_ID }}
           message: |
-            🤖 (It's me! I know you want to know about this..)
+            🤖 (It's me! ${{ github.actor }}, please be informed about this..)
 
             🔍 **Workflow Details**
 
@@ -43,7 +43,6 @@ jobs:
             🏃 Run ID: `${{ github.run_id }}`
             🔢 Run Number: `${{ github.run_number }}`
             🔁 Run Attempt: `${{ github.run_attempt }}`
-            👤 Actor: `${{ github.actor }}`
 
             ⚡️ *Sending this message via GitHub Actions from your friendly neighborhood bot*
           parse_mode: 'Markdown'
@@ -119,15 +118,8 @@ jobs:
           bot_token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           chat_id: ${{ secrets.TELEGRAM_CHAT_ID }}
           message: |
-            🔍 **Builder Details**
+            🛠 **Builder Details**
 
-            🏷️ Repository: `${{ github.repository }}`
-            🌿 Branch: `${{ github.ref_name }}`
-            🔧 Workflow Name: `${{ github.workflow }}`
-            🏃 Run ID: `${{ github.run_id }}`
-            🔢 Run Number: `${{ github.run_number }}`
-            🔁 Run Attempt: `${{ github.run_attempt }}`
-            🆔 Short SHA: `$(echo "${GITHUB_SHA}" | head -c 7)`
             🏷️ Image Tag: `$(echo "$(echo "${GITHUB_REF_NAME}" | sed 's/\//-/g' | tr '[:upper:]' '[:lower:]')-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}-$(echo "${GITHUB_SHA}" | head -c 7)-${{ matrix.image_base }}-${{ matrix.image_version }}")`
             🐳 Builder Image Tag: `${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:$(echo "$(echo "${GITHUB_REF_NAME}" | sed 's/\//-/g' | tr '[:upper:]' '[:lower:]')-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}-$(echo "${GITHUB_SHA}" | head -c 7)-${{ matrix.image_base }}-${{ matrix.image_version }}")-builder`
             📦 Outcome: ${{ job.status }}
