@@ -120,11 +120,19 @@ jobs:
           message: |
             🛠 **Builder Details**
 
-            🏷️ Image Tag: `${{ env.IMAGE_TAG }}`
+            🏷️ Repository: `${{ github.repository }}`
+            🌿 Branch: `${{ github.ref_name }}`
+            🔧 Workflow Name: `${{ github.workflow }}`
+            🏃 Run ID: `${{ github.run_id }}`
+            🔢 Run Number: `${{ github.run_number }}`
+            🔁 Run Attempt: `${{ github.run_attempt }}`
+
+            🏷️ Image Tag: `${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:${{ env.IMAGE_TAG }}`
             🐳 Builder Image Tag: `${{ env.BUILDER_IMAGE_TAG }}`
             📦 Outcome: ${{ job.status }}
 
             ⚡️ *Sending this message via GitHub Actions from your friendly inter-web bot*
+            [View Docker Registry](hub.docker.com/repository/docker/${{ env.BUILDER_IMAGE_TAG }})
           parse_mode: 'Markdown'
 
   build_dev:
@@ -224,8 +232,12 @@ jobs:
             🌿 Branch: `${{ github.ref_name }}`
             🏃 Run ID: `${{ github.run_id }}`
             🔢 Run Number: `${{ github.run_number }}`
-            👤 Actor: `${{ github.actor }}`
+            
+            🏷️ Image Tag: `${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:${{ env.IMAGE_TAG }}`
+            🐳 Builder Image Tag: `${{ env.BUILDER_IMAGE_TAG }}`
+            
             📦 Outcome: ${{ job.status }}
+            [View Docker Registry](hub.docker.com/repository/docker/${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}/${{ env.IMAGE_TAG }})
 
   build_test:
     name: Build Test
@@ -327,8 +339,12 @@ jobs:
             🌿 Branch: `${{ github.ref_name }}`
             🏃 Run ID: `${{ github.run_id }}`
             🔢 Run Number: `${{ github.run_number }}`
-            👤 Actor: `${{ github.actor }}`
+            
+            🏷️ Image Tag: `${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:${{ env.IMAGE_TAG }}`
+            🐳 Builder Image Tag: `${{ env.BUILDER_IMAGE }}:${{ env.BUILDER_VERSION }}`
+            
             📦 Outcome: ${{ job.status }}
+            [View Docker Registry](hub.docker.com/repository/docker/${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}/${{ env.IMAGE_TAG }})
 
   build_prod:
     name: Build Production
@@ -423,8 +439,12 @@ jobs:
             🌿 Branch: `${{ github.ref_name }}`
             🏃 Run ID: `${{ github.run_id }}`
             🔢 Run Number: `${{ github.run_number }}`
-            👤 Actor: `${{ github.actor }}`
+            
+            🏷️ Image Tag: `${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:${{ env.IMAGE_TAG }}`
+            🐳 Builder Image Tag: `${{ env.BUILDER_IMAGE_TAG }}`
+            
             📦 Outcome: ${{ job.status }}
+            [View Docker Registry](hub.docker.com/repository/docker/${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}/${{ env.IMAGE_TAG }})
 
   generate_changelog:
     name: Generate Changelog
@@ -475,8 +495,13 @@ jobs:
 
             🌿 Branch: `main`
             🔢 Version: `${{ env.IMAGE_TAG }}`
+
+            🏷️ Image Tag: `${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:${{ env.IMAGE_TAG }}`
+            🐳 Builder Image Tag: `${{ env.BUILDER_IMAGE_TAG }}`
+            
             📦 Outcome: ${{ job.status }}
             [View CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md)
+            [View Docker Registry](hub.docker.com/repository/docker/${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}/${{ env.IMAGE_TAG }})
 
   release_dev:
     name: Release Development
