@@ -95,18 +95,19 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build builder image
+      - name: Build and push builder image to DockerHub
         uses: docker/build-push-action@v5
         with:
           context: .
           file: Dockerfile.build-${{ matrix.image_base }}
-          target: builder
-          push: false
+          push: true
           platforms: ${{ env.DOCKER_PLATFORMS }}
           build-args: |
             IMAGE_BASE=${{ matrix.image_base }}
             IMAGE_VERSION=${{ matrix.image_version }}
           cache-from: type=gha
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}-builder:${{ env.IMAGE_TAG }}
 
       - name: Build and push final image to DockerHub
         uses: docker/build-push-action@v5
@@ -116,8 +117,8 @@ jobs:
           push: true
           platforms: ${{ env.DOCKER_PLATFORMS }}
           build-args: |
-            IMAGE_BASE=${{ matrix.image_base }}
-            IMAGE_VERSION=${{ matrix.image_version }}
+            IMAGE_BASE=${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}-builder
+            IMAGE_VERSION=${{ env.IMAGE_TAG }}
           cache-from: type=gha
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:${{ env.IMAGE_TAG }}
@@ -197,18 +198,19 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build builder image
+      - name: Build and push builder image to DockerHub
         uses: docker/build-push-action@v5
         with:
           context: .
           file: Dockerfile.build-${{ matrix.image_base }}
-          target: builder
-          push: false
+          push: true
           platforms: ${{ env.DOCKER_PLATFORMS }}
           build-args: |
             IMAGE_BASE=${{ matrix.image_base }}
             IMAGE_VERSION=${{ matrix.image_version }}
           cache-from: type=gha
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}-builder:${{ env.IMAGE_TAG }}
 
       - name: Build and push final image to DockerHub
         uses: docker/build-push-action@v5
@@ -218,8 +220,8 @@ jobs:
           push: true
           platforms: ${{ env.DOCKER_PLATFORMS }}
           build-args: |
-            IMAGE_BASE=${{ matrix.image_base }}
-            IMAGE_VERSION=${{ matrix.image_version }}
+            IMAGE_BASE=${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}-builder
+            IMAGE_VERSION=${{ env.IMAGE_TAG }}
           cache-from: type=gha
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:${{ env.IMAGE_TAG }}
@@ -294,18 +296,19 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build builder image
+      - name: Build and push builder image to DockerHub
         uses: docker/build-push-action@v5
         with:
           context: .
           file: Dockerfile.build-${{ matrix.image_base }}
-          target: builder
-          push: false
+          push: true
           platforms: ${{ env.DOCKER_PLATFORMS }}
           build-args: |
             IMAGE_BASE=${{ matrix.image_base }}
             IMAGE_VERSION=${{ matrix.image_version }}
           cache-from: type=gha
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}-builder:${{ env.IMAGE_TAG }}
 
       - name: Build and push final image to DockerHub
         uses: docker/build-push-action@v5
@@ -315,8 +318,8 @@ jobs:
           push: true
           platforms: ${{ env.DOCKER_PLATFORMS }}
           build-args: |
-            IMAGE_BASE=${{ matrix.image_base }}
-            IMAGE_VERSION=${{ matrix.image_version }}
+            IMAGE_BASE=${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}-builder
+            IMAGE_VERSION=${{ env.IMAGE_TAG }}
           cache-from: type=gha
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:${{ env.IMAGE_TAG }}
