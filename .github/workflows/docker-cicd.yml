@@ -156,7 +156,7 @@ jobs:
         run: |
           BRANCH=$(echo "${GITHUB_REF_NAME}" | sed 's/\//-/g' | tr '[:upper:]' '[:lower:]')
           SHORT_SHA=$(echo "${GITHUB_SHA}" | head -c 7)
-          IMAGE_TAG="${{ matrix.image_base }}-${{ matrix.image_version }}-devel-${BRANCH}-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}-${SHORT_SHA}"
+          IMAGE_TAG="${{ matrix.image_base }}-${{ matrix.image_version }}-devel-${BRANCH}-${SHORT_SHA}-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}"
           echo "IMAGE_TAG=${IMAGE_TAG}" >> $GITHUB_ENV
 
       - name: Download builder image tag artifact
@@ -259,7 +259,7 @@ jobs:
         run: |
           BRANCH=$(echo "${GITHUB_HEAD_REF}" | sed 's/\//-/g' | tr '[:upper:]' '[:lower:]')
           SHORT_SHA=$(echo "${GITHUB_SHA}" | head -c 7)
-          IMAGE_TAG="${{ matrix.image_base }}-${{ matrix.image_version }}-test-${BRANCH}-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}-${SHORT_SHA}"
+          IMAGE_TAG="${{ matrix.image_base }}-${{ matrix.image_version }}-test-${BRANCH}-${SHORT_SHA}-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}"
           echo "IMAGE_TAG=${IMAGE_TAG}" >> $GITHUB_ENV
 
       - name: Download builder image tag artifact
@@ -491,7 +491,7 @@ jobs:
         run: |
           BRANCH=$(echo "${GITHUB_REF_NAME}" | sed 's/\//-/g' | tr '[:upper:]' '[:lower:]')
           SHORT_SHA=$(echo "${GITHUB_SHA}" | head -c 7)
-          IMAGE_TAG="${{ matrix.image_base }}-${{ matrix.image_version }}-devel-${BRANCH}-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}-${SHORT_SHA}"
+          IMAGE_TAG="${{ matrix.image_base }}-${{ matrix.image_version }}-devel-${BRANCH}-${SHORT_SHA}-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}"
           echo "IMAGE_TAG=${IMAGE_TAG}" >> $GITHUB_ENV
 
       - name: Deploy to Development Environment
