@@ -127,12 +127,11 @@ jobs:
             🔢 Run Number: `${{ github.run_number }}`
             🔁 Run Attempt: `${{ github.run_attempt }}`
 
-            🏷️ Image Tag: `${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:${{ env.IMAGE_TAG }}`
             🐳 Builder Image Tag: `${{ env.BUILDER_IMAGE_TAG }}`
             📦 Outcome: ${{ job.status }}
 
             ⚡️ *Sending this message via GitHub Actions from your friendly inter-web bot*
-            [View Docker Registry](hub.docker.com/repository/docker/${{ env.BUILDER_IMAGE_TAG }})
+            [View Dockerhub](https://hub.docker.com/r/${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}
           parse_mode: 'Markdown'
 
   build_dev:
@@ -237,7 +236,7 @@ jobs:
             🐳 Builder Image Tag: `${{ env.BUILDER_IMAGE_TAG }}`
             
             📦 Outcome: ${{ job.status }}
-            [View Docker Registry](hub.docker.com/repository/docker/${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}/${{ env.IMAGE_TAG }})
+            [View Dockerhub](https://hub.docker.com/r/${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}
 
   build_test:
     name: Build Test
@@ -344,7 +343,7 @@ jobs:
             🐳 Builder Image Tag: `${{ env.BUILDER_IMAGE }}:${{ env.BUILDER_VERSION }}`
             
             📦 Outcome: ${{ job.status }}
-            [View Docker Registry](hub.docker.com/repository/docker/${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}/${{ env.IMAGE_TAG }})
+            [View Dockerhub](https://hub.docker.com/r/${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}
 
   build_prod:
     name: Build Production
@@ -444,7 +443,7 @@ jobs:
             🐳 Builder Image Tag: `${{ env.BUILDER_IMAGE_TAG }}`
             
             📦 Outcome: ${{ job.status }}
-            [View Docker Registry](hub.docker.com/repository/docker/${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}/${{ env.IMAGE_TAG }})
+            [View Dockerhub](https://hub.docker.com/r/${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}
 
   generate_changelog:
     name: Generate Changelog
@@ -501,7 +500,7 @@ jobs:
             
             📦 Outcome: ${{ job.status }}
             [View CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md)
-            [View Docker Registry](hub.docker.com/repository/docker/${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}/${{ env.IMAGE_TAG }})
+            [View Dockerhub](https://hub.docker.com/r/${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}
 
   release_dev:
     name: Release Development
