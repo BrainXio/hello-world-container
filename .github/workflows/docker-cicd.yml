@@ -176,7 +176,7 @@ jobs:
           build-args: |
             IMAGE_BASE=${{ matrix.image_base }}
             IMAGE_VERSION=${{ matrix.image_version }}
-            BUILDER_IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/$${{ env.APP_NAME }}-builder
+            BUILDER_IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/builder
             BUILDER_VERSION=${BUILDER_IMAGE_TAG##*:}
           cache-from: type=gha
           tags: |
@@ -278,7 +278,7 @@ jobs:
           build-args: |
             IMAGE_BASE=${{ matrix.image_base }}
             IMAGE_VERSION=${{ matrix.image_version }}
-            BUILDER_IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/$${{ env.APP_NAME }}-builder
+            BUILDER_IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/builder
             BUILDER_VERSION=${BUILDER_IMAGE_TAG##*:}
           cache-from: type=gha
           tags: |
@@ -375,7 +375,7 @@ jobs:
           build-args: |
             IMAGE_BASE=${{ matrix.image_base }}
             IMAGE_VERSION=${{ matrix.image_version }}
-            BUILDER_IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/$${{ env.APP_NAME }}-builder
+            BUILDER_IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/builder
             BUILDER_VERSION=${BUILDER_IMAGE_TAG##*:}
           cache-from: type=gha
           tags: |
