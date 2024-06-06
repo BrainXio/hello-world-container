@@ -459,4 +459,3 @@ jobs:
             🔢 Version: `${{ env.IMAGE_TAG }}`
             🐳 Image: `docker pull ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:${{ env.IMAGE_TAG }}`
             📦 Outcome: ${{ job.status }}
-atus
