@@ -1,5 +1,8 @@
 ARG IMAGE_BASE=ubuntu
 ARG IMAGE_VERSION=20.04
+ARG BUILDER_IMAGE
+
+FROM ${BUILDER_IMAGE} as base
 
 FROM ${IMAGE_BASE}:${IMAGE_VERSION}
 
@@ -11,8 +14,8 @@ RUN apt-get update && \
 # Set the working directory
 WORKDIR /app
 
-# Copy the application source code and virtual environment from the builder stage
-COPY --from=ubuntu-builder /app /app
+# Copy the application source code and virtual environment from the builder image
+COPY --from=base /app /app
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1

@@ -5,6 +5,9 @@ on:
     branches:
       - main
       - 'feature/*'
+      - 'hotfix/*'
+      - 'bugfix/*'
+      - 'release/*'
     paths-ignore:
       - '*.md'
     tags:
@@ -106,6 +109,15 @@ jobs:
           cache-from: type=gha
           tags: ${{ env.BUILDER_IMAGE_TAG }}
 
+      - name: Save builder image tag
+        run: echo "${{ env.BUILDER_IMAGE_TAG }}" > builder_image_tag.txt
+
+      - name: Upload builder image tag artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: builder_image_tag
+          path: builder_image_tag.txt
+
       - name: Build and push final image to DockerHub
         uses: docker/build-push-action@v5
         with:
@@ -150,7 +162,7 @@ jobs:
   build_test:
     name: Build Test
     runs-on: ubuntu-latest
-    needs: workflow_info
+    needs: [workflow_info]
     if: |
       github.event_name == 'pull_request' && 
       (startsWith(github.head_ref, 'hotfix/') || 
@@ -181,7 +193,17 @@ jobs:
           SHORT_SHA=$(echo "${GITHUB_SHA}" | head -c 7)
           IMAGE_TAG="test-${BRANCH}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-${SHORT_SHA}-${{ matrix.image_base }}-${{ matrix.image_version }}"
           echo "IMAGE_TAG=${IMAGE_TAG}" >> $GITHUB_ENV
-          echo "BUILDER_IMAGE_TAG=${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}-builder:${IMAGE_TAG}" >> $GITHUB_ENV
+
+      - name: Download builder image tag artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: builder_image_tag
+          path: .
+
+      - name: Read builder image tag
+        run: |
+          BUILDER_IMAGE_TAG=$(cat builder_image_tag.txt)
+          echo "BUILDER_IMAGE_TAG=${BUILDER_IMAGE_TAG}" >> $GITHUB_ENV
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -195,19 +217,6 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and push builder image to DockerHub
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: Dockerfile.build-${{ matrix.image_base }}
-          push: true
-          platforms: ${{ env.DOCKER_PLATFORMS }}
-          build-args: |
-            IMAGE_BASE=${{ matrix.image_base }}
-            IMAGE_VERSION=${{ matrix.image_version }}
-          cache-from: type=gha
-          tags: ${{ env.BUILDER_IMAGE_TAG }}
-
       - name: Build and push final image to DockerHub
         uses: docker/build-push-action@v5
         with:
@@ -216,7 +225,7 @@ jobs:
           push: true
           platforms: ${{ env.DOCKER_PLATFORMS }}
           build-args: |
-            BUILDER_IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}-builder:${IMAGE_TAG}
+            BUILDER_IMAGE=${BUILDER_IMAGE_TAG}
           cache-from: type=gha
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:${{ env.IMAGE_TAG }}
@@ -278,7 +287,17 @@ jobs:
           SHORT_SHA=$(echo "${GITHUB_SHA}" | head -c 7)
           IMAGE_TAG="${GITHUB_REF##*/}-${SHORT_SHA}-${{ matrix.image_base }}-${{ matrix.image_version }}"
           echo "IMAGE_TAG=${IMAGE_TAG}" >> $GITHUB_ENV
-          echo "BUILDER_IMAGE_TAG=${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}-builder:${IMAGE_TAG}" >> $GITHUB_ENV
+
+      - name: Download builder image tag artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: builder_image_tag
+          path: .
+
+      - name: Read builder image tag
+        run: |
+          BUILDER_IMAGE_TAG=$(cat builder_image_tag.txt)
+          echo "BUILDER_IMAGE_TAG=${BUILDER_IMAGE_TAG}" >> $GITHUB_ENV
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -292,19 +311,6 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and push builder image to DockerHub
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: Dockerfile.build-${{ matrix.image_base }}
-          push: true
-          platforms: ${{ env.DOCKER_PLATFORMS }}
-          build-args: |
-            IMAGE_BASE=${{ matrix.image_base }}
-            IMAGE_VERSION=${{ matrix.image_version }}
-          cache-from: type=gha
-          tags: ${{ env.BUILDER_IMAGE_TAG }}
-
       - name: Build and push final image to DockerHub
         uses: docker/build-push-action@v5
         with:
@@ -313,7 +319,7 @@ jobs:
           push: true
           platforms: ${{ env.DOCKER_PLATFORMS }}
           build-args: |
-            BUILDER_IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}-builder:${IMAGE_TAG}
+            BUILDER_IMAGE=${BUILDER_IMAGE_TAG}
           cache-from: type=gha
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:${{ env.IMAGE_TAG }}

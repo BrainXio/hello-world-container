@@ -1,16 +1,21 @@
-ARG IMAGE_BASE=alpine
-ARG IMAGE_VERSION=3.20.0
+ARG IMAGE_BASE=ubuntu
+ARG IMAGE_VERSION=20.04
+ARG BUILDER_IMAGE
+
+FROM ${BUILDER_IMAGE} as base
 
 FROM ${IMAGE_BASE}:${IMAGE_VERSION}
 
 # Install Python runtime and testing dependencies
-RUN apk add --no-cache python3 py3-pytest
+RUN apt-get update && \
+    apt-get install -y python3 python3-pytest && \
+    rm -rf /var/lib/apt/lists/*
 
 # Set the working directory
 WORKDIR /app
 
-# Copy the application source code and virtual environment from the builder stage
-COPY --from=alpine-builder /app /app
+# Copy the application source code and virtual environment from the builder image
+COPY --from=base /app /app
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
@@ -18,7 +23,7 @@ ENV PATH="/app/venv/bin:$PATH"
 
 # Set the user to use when running this image
 ARG APP_USER=codespace
-RUN adduser -D $APP_USER
+RUN useradd -ms /bin/bash $APP_USER
 USER $APP_USER
 
 # Run tests
