@@ -33,7 +33,7 @@ jobs:
           bot_token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           chat_id: ${{ secrets.TELEGRAM_CHAT_ID }}
           message: |
-            🤖 (It's me! ${{ github.actor }}, please be informed about this..)
+            🤖 (Hey! It's me, ${{ github.actor }} from BrainXio, please be informed about this..)
 
             🔍 **Workflow Details**
 
