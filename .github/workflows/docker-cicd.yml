@@ -81,7 +81,9 @@ jobs:
           BRANCH=$(echo "${GITHUB_REF_NAME}" | sed 's/\//-/g' | tr '[:upper:]' '[:lower:]')
           SHORT_SHA=$(echo "${GITHUB_SHA}" | head -c 7)
           IMAGE_TAG="${BRANCH}-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}-${SHORT_SHA}-${{ matrix.image_base }}-${{ matrix.image_version }}"
+          BUILDER_IMAGE_TAG="${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}-builder:${{ IMAGE_TAG }}"
           echo "IMAGE_TAG=${IMAGE_TAG}" >> $GITHUB_ENV
+          echo "BUILDER_IMAGE_TAG=${BUILDER_IMAGE_TAG}" >> $GITHUB_ENV
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -106,8 +108,7 @@ jobs:
             IMAGE_BASE=${{ matrix.image_base }}
             IMAGE_VERSION=${{ matrix.image_version }}
           cache-from: type=gha
-          tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}-builder:${{ env.IMAGE_TAG }}
+          tags: ${{ env.BUILDER_IMAGE_TAG }}
 
       - name: Build and push final image to DockerHub
         uses: docker/build-push-action@v5
@@ -117,8 +118,7 @@ jobs:
           push: true
           platforms: ${{ env.DOCKER_PLATFORMS }}
           build-args: |
-            IMAGE_BASE=${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}-builder
-            IMAGE_VERSION=${{ env.IMAGE_TAG }}
+            BUILDER_IMAGE_TAG=${{ env.BUILDER_IMAGE_TAG }}
           cache-from: type=gha
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:${{ env.IMAGE_TAG }}
@@ -184,7 +184,9 @@ jobs:
           BRANCH=$(echo "${GITHUB_HEAD_REF}" | sed 's/\//-/g' | tr '[:upper:]' '[:lower:]')
           SHORT_SHA=$(echo "${GITHUB_SHA}" | head -c 7)
           IMAGE_TAG="test-${BRANCH}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-${SHORT_SHA}-${{ matrix.image_base }}-${{ matrix.image_version }}"
+          BUILDER_IMAGE_TAG="${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}-builder:${{ IMAGE_TAG }}"
           echo "IMAGE_TAG=${IMAGE_TAG}" >> $GITHUB_ENV
+          echo "BUILDER_IMAGE_TAG=${BUILDER_IMAGE_TAG}" >> $GITHUB_ENV
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -209,8 +211,7 @@ jobs:
             IMAGE_BASE=${{ matrix.image_base }}
             IMAGE_VERSION=${{ matrix.image_version }}
           cache-from: type=gha
-          tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}-builder:${{ env.IMAGE_TAG }}
+          tags: ${{ env.BUILDER_IMAGE_TAG }}
 
       - name: Build and push final image to DockerHub
         uses: docker/build-push-action@v5
@@ -220,8 +221,7 @@ jobs:
           push: true
           platforms: ${{ env.DOCKER_PLATFORMS }}
           build-args: |
-            IMAGE_BASE=${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}-builder
-            IMAGE_VERSION=${{ env.IMAGE_TAG }}
+            BUILDER_IMAGE_TAG=${{ env.BUILDER_IMAGE_TAG }}
           cache-from: type=gha
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:${{ env.IMAGE_TAG }}
@@ -282,7 +282,9 @@ jobs:
         run: |
           SHORT_SHA=$(echo "${GITHUB_SHA}" | head -c 7)
           IMAGE_TAG="${GITHUB_REF##*/}-${SHORT_SHA}-${{ matrix.image_base }}-${{ matrix.image_version }}"
+          BUILDER_IMAGE_TAG="${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}-builder:${{ IMAGE_TAG }}"
           echo "IMAGE_TAG=${IMAGE_TAG}" >> $GITHUB_ENV
+          echo "BUILDER_IMAGE_TAG=${BUILDER_IMAGE_TAG}" >> $GITHUB_ENV
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -307,8 +309,7 @@ jobs:
             IMAGE_BASE=${{ matrix.image_base }}
             IMAGE_VERSION=${{ matrix.image_version }}
           cache-from: type=gha
-          tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}-builder:${{ env.IMAGE_TAG }}
+          tags: ${{ env.BUILDER_IMAGE_TAG }}
 
       - name: Build and push final image to DockerHub
         uses: docker/build-push-action@v5
@@ -318,8 +319,7 @@ jobs:
           push: true
           platforms: ${{ env.DOCKER_PLATFORMS }}
           build-args: |
-            IMAGE_BASE=${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}-builder
-            IMAGE_VERSION=${{ env.IMAGE_TAG }}
+            BUILDER_IMAGE_TAG=${{ env.BUILDER_IMAGE_TAG }}
           cache-from: type=gha
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:${{ env.IMAGE_TAG }}
