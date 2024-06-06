@@ -11,7 +11,7 @@ WORKDIR /app
 
 # Create a virtual environment
 RUN python3 -m venv venv \
-    && pip install --upgrade-pip
+    && pip3 install --upgrade-pip
 
 # Activate virtual environment and install dependencies
 COPY requirements.txt .
