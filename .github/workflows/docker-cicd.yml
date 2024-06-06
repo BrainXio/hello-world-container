@@ -126,7 +126,7 @@ jobs:
           push: true
           platforms: ${{ env.DOCKER_PLATFORMS }}
           build-args: |
-            BUILDER_IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}-builder:${IMAGE_TAG}
+            BUILDER_IMAGE=${{ env.BUILDER_IMAGE_TAG }}
           cache-from: type=gha
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:${{ env.IMAGE_TAG }}
@@ -221,7 +221,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: Dockerfile.prod-${{ matrix.image_base }}
+          file: Dockerfile.test-${{ matrix.image_base }}
           push: true
           platforms: ${{ env.DOCKER_PLATFORMS }}
           build-args: |
