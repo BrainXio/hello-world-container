@@ -1,0 +1,118 @@
+services:
+  builder-alpine:
+    build:
+      context: .
+      dockerfile: Dockerfile.build-alpine
+      args:
+        IMAGE_BASE: alpine
+        IMAGE_VERSION: 3.20.0
+    image: alpine-builder:latest
+    volumes:
+      - ./src/app:/app
+
+  builder-ubuntu:
+    build:
+      context: .
+      dockerfile: Dockerfile.build-ubuntu
+      args:
+        IMAGE_BASE: ubuntu
+        IMAGE_VERSION: 20.04
+    image: ubuntu-builder:latest
+    volumes:
+      - ./src/app:/app
+
+  devel-alpine:
+    build:
+      context: .
+      dockerfile: Dockerfile.devel-alpine
+      args:
+        IMAGE_BASE: alpine-builder
+        IMAGE_VERSION: latest
+        APP_USER: codespace
+    volumes:
+      - ./src/app:/app
+    environment:
+      PYTHONUNBUFFERED: 1
+    command: ["bash"]
+    depends_on:
+      - builder-alpine
+
+  devel-ubuntu:
+    build:
+      context: .
+      dockerfile: Dockerfile.devel-ubuntu
+      args:
+        IMAGE_BASE: ubuntu-builder
+        IMAGE_VERSION: latest
+        APP_USER: codespace
+    volumes:
+      - ./src/app:/app
+    environment:
+      PYTHONUNBUFFERED: 1
+    command: ["bash"]
+    depends_on:
+      - builder-ubuntu
+
+  app-alpine:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod-alpine
+      args:
+        IMAGE_BASE: alpine-builder
+        IMAGE_VERSION: latest
+        APP_USER: codespace
+    volumes:
+      - ./src/app:/app
+    environment:
+      PYTHONUNBUFFERED: 1
+    command: ["python3", "app/main.py"]
+    depends_on:
+      - builder-alpine
+
+  app-ubuntu:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod-ubuntu
+      args:
+        IMAGE_BASE: ubuntu-builder
+        IMAGE_VERSION: latest
+        APP_USER: codespace
+    volumes:
+      - ./src/app:/app
+    environment:
+      PYTHONUNBUFFERED: 1
+    command: ["python3", "app/main.py"]
+    depends_on:
+      - builder-ubuntu
+
+  test-alpine:
+    build:
+      context: .
+      dockerfile: Dockerfile.test-alpine
+      args:
+        IMAGE_BASE: alpine-builder
+        IMAGE_VERSION: latest
+        APP_USER: codespace
+    volumes:
+      - ./src/app:/app
+    environment:
+      PYTHONUNBUFFERED: 1
+    command: ["pytest", "--disable-warnings"]
+    depends_on:
+      - builder-alpine
+
+  test-ubuntu:
+    build:
+      context: .
+      dockerfile: Dockerfile.test-ubuntu
+      args:
+        IMAGE_BASE: ubuntu-builder
+        IMAGE_VERSION: latest
+        APP_USER: codespace
+    volumes:
+      - ./src/app:/app
+    environment:
+      PYTHONUNBUFFERED: 1
+    command: ["pytest", "--disable-warnings"]
+    depends_on:
+      - builder-ubuntu
