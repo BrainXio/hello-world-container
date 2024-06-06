@@ -5,9 +5,6 @@ on:
     branches:
       - main
       - 'feature/*'
-      - 'hotfix/*'
-      - 'bugfix/*'
-      - 'release/*'
     paths-ignore:
       - '*.md'
     tags:
@@ -22,6 +19,9 @@ on:
       - '*.md'
   workflow_dispatch:
 
+env:
+  DOCKER_PLATFORMS: linux/amd64,linux/arm64
+
 jobs:
   workflow_info:
     name: Workflow Info
@@ -33,7 +33,7 @@ jobs:
           bot_token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           chat_id: ${{ secrets.TELEGRAM_CHAT_ID }}
           message: |
-            🤖 (It's me! I know you want to know about this..)
+            🤖 (Hey! It's me, ${{ github.actor }} from BrainXio, please be informed about this..)
 
             🔍 **Workflow Details**
 
@@ -43,15 +43,101 @@ jobs:
             🏃 Run ID: `${{ github.run_id }}`
             🔢 Run Number: `${{ github.run_number }}`
             🔁 Run Attempt: `${{ github.run_attempt }}`
-            👤 Actor: `${{ github.actor }}`
 
             ⚡️ *Sending this message via GitHub Actions from your friendly neighborhood bot*
+          parse_mode: 'Markdown'
+
+  build_builder:
+    name: Build Builder Image
+    runs-on: ubuntu-latest
+    needs: workflow_info
+    strategy:
+      matrix:
+        image_base: [alpine, ubuntu]
+        image_version: [3.20.0, 20.04]
+        exclude:
+          - image_base: ubuntu
+            image_version: 3.20.0
+          - image_base: alpine
+            image_version: 20.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set APP_NAME
+        run: echo "APP_NAME=$(echo ${{ github.repository }} | cut -d '/' -f2 | sed 's/-container$//' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
+      - name: Set Builder Version
+        run: |
+          BRANCH=$(echo "${GITHUB_REF_NAME}" | sed 's/\//-/g' | tr '[:upper:]' '[:lower:]')
+          SHORT_SHA=$(echo "${GITHUB_SHA}" | head -c 7)
+          IMAGE_TAG="${{ matrix.image_base }}-${{ matrix.image_version }}-builder-${BRANCH}-${SHORT_SHA}-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}"
+          echo "IMAGE_TAG=${IMAGE_TAG}" >> $GITHUB_ENV
+          echo "BUILDER_IMAGE_TAG=${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:${IMAGE_TAG}" >> $GITHUB_ENV
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Create and boot a builder instance
+        run: docker buildx create --use
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push builder image to DockerHub
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile.build-${{ matrix.image_base }}
+          push: true
+          platforms: ${{ env.DOCKER_PLATFORMS }}
+          build-args: |
+            IMAGE_BASE=${{ matrix.image_base }}
+            IMAGE_VERSION=${{ matrix.image_version }}
+          cache-from: type=gha
+          tags: ${{ env.BUILDER_IMAGE_TAG }}
+
+      - name: Save builder image tag
+        run: echo "${{ env.BUILDER_IMAGE_TAG }}" > builder_image_tag_${{ matrix.image_base }}_${{ matrix.image_version }}.txt
+
+      - name: Upload builder image tag artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: builder_image_tag_${{ matrix.image_base }}_${{ matrix.image_version }}
+          path: builder_image_tag_${{ matrix.image_base }}_${{ matrix.image_version }}.txt
+
+      - name: Send Telegram
+        uses: brainxio/telegram-bot-action@v1
+        with:
+          bot_token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          chat_id: ${{ secrets.TELEGRAM_CHAT_ID }}
+          message: |
+            🛠 **Builder Details**
+
+            🏷️ Repository: `${{ github.repository }}`
+            🌿 Branch: `${{ github.ref_name }}`
+            🔧 Workflow Name: `${{ github.workflow }}`
+            🏃 Run ID: `${{ github.run_id }}`
+            🔢 Run Number: `${{ github.run_number }}`
+            🔁 Run Attempt: `${{ github.run_attempt }}`
+
+            🐳 Builder Image Tag: `${{ env.BUILDER_IMAGE_TAG }}`
+            📦 Outcome: ${{ job.status }}
+
+            ⚡️ *Sending this message via GitHub Actions from your friendly inter-web bot*
+            [View Dockerhub](https://hub.docker.com/r/${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}
           parse_mode: 'Markdown'
 
   build_dev:
     name: Build Development
     runs-on: ubuntu-latest
-    needs: workflow_info
+    needs: build_builder
     if: |
       startsWith(github.ref, 'refs/heads/feature/')
     strategy:
@@ -75,9 +161,22 @@ jobs:
 
       - name: Set Development Version
         run: |
-          BRANCH=$(echo "${GITHUB_REF_NAME}" | sed 's/\//-/g')
-          IMAGE_TAG="${BRANCH}-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}-${{ matrix.image_base }}-${{ matrix.image_version }}"
+          BRANCH=$(echo "${GITHUB_REF_NAME}" | sed 's/\//-/g' | tr '[:upper:]' '[:lower:]')
+          SHORT_SHA=$(echo "${GITHUB_SHA}" | head -c 7)
+          IMAGE_TAG="${{ matrix.image_base }}-${{ matrix.image_version }}-devel-${BRANCH}-${SHORT_SHA}-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}"
           echo "IMAGE_TAG=${IMAGE_TAG}" >> $GITHUB_ENV
+
+      - name: Download builder image tag artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: builder_image_tag_${{ matrix.image_base }}_${{ matrix.image_version }}
+          path: .
+
+      - name: Read builder image tag
+        run: |
+          BUILDER_IMAGE_TAG=$(cat builder_image_tag_${{ matrix.image_base }}_${{ matrix.image_version }}.txt)
+          echo "BUILDER_IMAGE=${BUILDER_IMAGE_TAG%:*}" >> $GITHUB_ENV
+          echo "BUILDER_VERSION=${BUILDER_IMAGE_TAG##*:}" >> $GITHUB_ENV
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -91,29 +190,18 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build builder image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: Dockerfile.build-${{ matrix.image_base }}
-          target: build
-          push: false
-          platforms: linux/amd64,linux/arm64
-          build-args: |
-            IMAGE_BASE=${{ matrix.image_base }}
-            IMAGE_VERSION=${{ matrix.image_version }}
-          cache-from: type=gha
-
       - name: Build and push final image to DockerHub
         uses: docker/build-push-action@v5
         with:
           context: .
           file: Dockerfile.prod-${{ matrix.image_base }}
           push: true
-          platforms: linux/amd64,linux/arm64
+          platforms: ${{ env.DOCKER_PLATFORMS }}
           build-args: |
             IMAGE_BASE=${{ matrix.image_base }}
             IMAGE_VERSION=${{ matrix.image_version }}
+            BUILDER_IMAGE=${{ env.BUILDER_IMAGE }}
+            BUILDER_VERSION=${{ env.BUILDER_VERSION }}
           cache-from: type=gha
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:${{ env.IMAGE_TAG }}
@@ -143,18 +231,22 @@ jobs:
             🌿 Branch: `${{ github.ref_name }}`
             🏃 Run ID: `${{ github.run_id }}`
             🔢 Run Number: `${{ github.run_number }}`
-            👤 Actor: `${{ github.actor }}`
+            
+            🏷️ Image Tag: `${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:${{ env.IMAGE_TAG }}`
+            🐳 Builder Image Tag: `${{ env.BUILDER_IMAGE_TAG }}`
+            
             📦 Outcome: ${{ job.status }}
+            [View Dockerhub](https://hub.docker.com/r/${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}
 
   build_test:
     name: Build Test
     runs-on: ubuntu-latest
-    needs: workflow_info
+    needs: [workflow_info, build_builder]
     if: |
       github.event_name == 'pull_request' && 
-      (startsWith(github.ref, 'refs/heads/hotfix/') || 
-      startsWith(github.ref, 'refs/heads/bugfix/') || 
-      startsWith(github.ref, 'refs/heads/release/'))
+      (startsWith(github.head_ref, 'hotfix/') || 
+      startsWith(github.head_ref, 'bugfix/') || 
+      startsWith(github.head_ref, 'release/'))
     strategy:
       matrix:
         image_base: [alpine, ubuntu]
@@ -176,8 +268,22 @@ jobs:
 
       - name: Set Test Version
         run: |
-          IMAGE_TAG="test-${{ github.repository }}-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.image_base }}-${{ matrix.image_version }}"
+          BRANCH=$(echo "${GITHUB_HEAD_REF}" | sed 's/\//-/g' | tr '[:upper:]' '[:lower:]')
+          SHORT_SHA=$(echo "${GITHUB_SHA}" | head -c 7)
+          IMAGE_TAG="${{ matrix.image_base }}-${{ matrix.image_version }}-test-${BRANCH}-${SHORT_SHA}-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}"
           echo "IMAGE_TAG=${IMAGE_TAG}" >> $GITHUB_ENV
+
+      - name: Download builder image tag artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: builder_image_tag_${{ matrix.image_base }}_${{ matrix.image_version }}
+          path: .
+
+      - name: Read builder image tag
+        run: |
+          BUILDER_IMAGE_TAG=$(cat builder_image_tag_${{ matrix.image_base }}_${{ matrix.image_version }}.txt)
+          echo "BUILDER_IMAGE=${BUILDER_IMAGE_TAG%:*}" >> $GITHUB_ENV
+          echo "BUILDER_VERSION=${BUILDER_IMAGE_TAG##*:}" >> $GITHUB_ENV
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -191,29 +297,18 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build builder image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: Dockerfile.build-${{ matrix.image_base }}
-          target: build
-          push: false
-          platforms: linux/amd64,linux/arm64
-          build-args: |
-            IMAGE_BASE=${{ matrix.image_base }}
-            IMAGE_VERSION=${{ matrix.image_version }}
-          cache-from: type=gha
-
       - name: Build and push final image to DockerHub
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: Dockerfile.prod-${{ matrix.image_base }}
+          file: Dockerfile.test-${{ matrix.image_base }}
           push: true
-          platforms: linux/amd64,linux/arm64
+          platforms: ${{ env.DOCKER_PLATFORMS }}
           build-args: |
             IMAGE_BASE=${{ matrix.image_base }}
             IMAGE_VERSION=${{ matrix.image_version }}
+            BUILDER_IMAGE=${{ env.BUILDER_IMAGE }}
+            BUILDER_VERSION=${{ env.BUILDER_VERSION }}
           cache-from: type=gha
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:${{ env.IMAGE_TAG }}
@@ -243,13 +338,17 @@ jobs:
             🌿 Branch: `${{ github.ref_name }}`
             🏃 Run ID: `${{ github.run_id }}`
             🔢 Run Number: `${{ github.run_number }}`
-            👤 Actor: `${{ github.actor }}`
+            
+            🏷️ Image Tag: `${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:${{ env.IMAGE_TAG }}`
+            🐳 Builder Image Tag: `${{ env.BUILDER_IMAGE }}:${{ env.BUILDER_VERSION }}`
+            
             📦 Outcome: ${{ job.status }}
+            [View Dockerhub](https://hub.docker.com/r/${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}
 
   build_prod:
     name: Build Production
     runs-on: ubuntu-latest
-    needs: workflow_info
+    needs: [workflow_info, build_builder]
     if: startsWith(github.ref, 'refs/heads/main') || startsWith(github.ref, 'refs/tags/v')
     strategy:
       matrix:
@@ -271,7 +370,22 @@ jobs:
         run: echo "APP_NAME=$(echo ${{ github.repository }} | cut -d '/' -f2 | sed 's/-container$//' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
       - name: Load Image Tag from Git Tag
-        run: echo "IMAGE_TAG=${GITHUB_REF##*/}-${{ matrix.image_base }}-${{ matrix.image_version }}" >> $GITHUB_ENV
+        run: |
+          SHORT_SHA=$(echo "${GITHUB_SHA}" | head -c 7)
+          IMAGE_TAG="${GITHUB_REF##*/}-${{ matrix.image_base }}-${{ matrix.image_version }}-${SHORT_SHA}"
+          echo "IMAGE_TAG=${IMAGE_TAG}" >> $GITHUB_ENV
+
+      - name: Download builder image tag artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: builder_image_tag_${{ matrix.image_base }}_${{ matrix.image_version }}
+          path: .
+
+      - name: Read builder image tag
+        run: |
+          BUILDER_IMAGE_TAG=$(cat builder_image_tag_${{ matrix.image_base }}_${{ matrix.image_version }}.txt)
+          echo "BUILDER_IMAGE=${BUILDER_IMAGE_TAG%:*}" >> $GITHUB_ENV
+          echo "BUILDER_VERSION=${BUILDER_IMAGE_TAG##*:}" >> $GITHUB_ENV
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -285,29 +399,18 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build builder image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: Dockerfile.build-${{ matrix.image_base }}
-          target: build
-          push: false
-          platforms: linux/amd64,linux/arm64
-          build-args: |
-            IMAGE_BASE=${{ matrix.image_base }}
-            IMAGE_VERSION=${{ matrix.image_version }}
-          cache-from: type=gha
-
       - name: Build and push final image to DockerHub
         uses: docker/build-push-action@v5
         with:
           context: .
           file: Dockerfile.prod-${{ matrix.image_base }}
           push: true
-          platforms: linux/amd64,linux/arm64
+          platforms: ${{ env.DOCKER_PLATFORMS }}
           build-args: |
             IMAGE_BASE=${{ matrix.image_base }}
             IMAGE_VERSION=${{ matrix.image_version }}
+            BUILDER_IMAGE=${{ env.BUILDER_IMAGE }}
+            BUILDER_VERSION=${{ env.BUILDER_VERSION }}
           cache-from: type=gha
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:${{ env.IMAGE_TAG }}
@@ -335,8 +438,12 @@ jobs:
             🌿 Branch: `${{ github.ref_name }}`
             🏃 Run ID: `${{ github.run_id }}`
             🔢 Run Number: `${{ github.run_number }}`
-            👤 Actor: `${{ github.actor }}`
+            
+            🏷️ Image Tag: `${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:${{ env.IMAGE_TAG }}`
+            🐳 Builder Image Tag: `${{ env.BUILDER_IMAGE_TAG }}`
+            
             📦 Outcome: ${{ job.status }}
+            [View Dockerhub](https://hub.docker.com/r/${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}
 
   generate_changelog:
     name: Generate Changelog
@@ -357,8 +464,8 @@ jobs:
 
       - name: Git Config
         run: |
-          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
-          git config --global user.name "BrainXio CI"
+          git config --global user.email "actions@github.com"
+          git config --global user.name "Github Actions"
 
       - name: Create Changelog
         run: |
@@ -387,8 +494,13 @@ jobs:
 
             🌿 Branch: `main`
             🔢 Version: `${{ env.IMAGE_TAG }}`
+
+            🏷️ Image Tag: `${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:${{ env.IMAGE_TAG }}`
+            🐳 Builder Image Tag: `${{ env.BUILDER_IMAGE_TAG }}`
+            
             📦 Outcome: ${{ job.status }}
             [View CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md)
+            [View Dockerhub](https://hub.docker.com/r/${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}
 
   release_dev:
     name: Release Development
@@ -401,8 +513,9 @@ jobs:
 
       - name: Load Image Tag from Artifacts
         run: |
-          BRANCH=$(echo "${GITHUB_REF_NAME}" | sed 's/\//-/g')
-          IMAGE_TAG="${BRANCH}-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}"
+          BRANCH=$(echo "${GITHUB_REF_NAME}" | sed 's/\//-/g' | tr '[:upper:]' '[:lower:]')
+          SHORT_SHA=$(echo "${GITHUB_SHA}" | head -c 7)
+          IMAGE_TAG="${{ matrix.image_base }}-${{ matrix.image_version }}-devel-${BRANCH}-${SHORT_SHA}-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}"
           echo "IMAGE_TAG=${IMAGE_TAG}" >> $GITHUB_ENV
 
       - name: Deploy to Development Environment

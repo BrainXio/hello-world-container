@@ -1,30 +1,28 @@
-# Dockerfile.prod-alpine
+ARG IMAGE_BASE=alpine
+ARG IMAGE_VERSION=3.20.0
+ARG BUILDER_IMAGE
+ARG BUILDER_VERSION
 
-ARG IMAGE_BASE=alpine-builder
-ARG IMAGE_VERSION=latest
-
-FROM ${IMAGE_BASE}:${IMAGE_VERSION} AS prod-alpine
-
-ARG APP_USER=codespace
+FROM ${BUILDER_IMAGE}:${BUILDER_VERSION} as base
+FROM ${IMAGE_BASE}:${IMAGE_VERSION} as final
 
 # Install Python runtime
 RUN apk add --no-cache python3
 
-# Create a user to run the app
-RUN addgroup -S appgroup && adduser -S ${APP_USER} -G appgroup
-
 # Set the working directory
 WORKDIR /app
+
+# Copy the application source code and virtual environment from the build stage
+COPY --from=base /app /app
+
+# Set the user to use when running this image
+ARG APP_USER=codespace
+RUN adduser -D ${APP_USER}
+USER ${APP_USER}
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
 ENV PATH="/app/venv/bin:$PATH"
-
-# Copy the application source code and virtual environment from the build stage
-COPY --from=alpine-builder /app /app
-
-# Set the user to use when running this image
-USER ${APP_USER}
 
 # Run the application
 CMD ["python3", "app/main.py"]
