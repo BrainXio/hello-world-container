@@ -113,6 +113,28 @@ jobs:
           name: builder_image_tag_${{ matrix.image_base }}_${{ matrix.image_version }}
           path: builder_image_tag_${{ matrix.image_base }}_${{ matrix.image_version }}.txt
 
+  - name: Send Telegram
+    uses: brainxio/telegram-bot-action@v1
+    with:
+      bot_token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      chat_id: ${{ secrets.TELEGRAM_CHAT_ID }}
+      message: |
+        🔍 **Builder Details**
+
+        🏷️ Repository: `${{ github.repository }}`
+        🌿 Branch: `${{ github.ref_name }}`
+        🔧 Workflow Name: `${{ github.workflow }}`
+        🏃 Run ID: `${{ github.run_id }}`
+        🔢 Run Number: `${{ github.run_number }}`
+        🔁 Run Attempt: `${{ github.run_attempt }}`
+        🆔 Short SHA: `$(echo "${GITHUB_SHA}" | head -c 7)`
+        🏷️ Image Tag: `$(echo "$(echo "${GITHUB_REF_NAME}" | sed 's/\//-/g' | tr '[:upper:]' '[:lower:]')-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}-$(echo "${GITHUB_SHA}" | head -c 7)-${{ matrix.image_base }}-${{ matrix.image_version }}")`
+        🐳 Builder Image Tag: `${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:$(echo "$(echo "${GITHUB_REF_NAME}" | sed 's/\//-/g' | tr '[:upper:]' '[:lower:]')-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}-$(echo "${GITHUB_SHA}" | head -c 7)-${{ matrix.image_base }}-${{ matrix.image_version }}")-builder`
+        📦 Outcome: ${{ job.status }}
+
+        ⚡️ *Sending this message via GitHub Actions from your friendly inter-web bot*
+      parse_mode: 'Markdown'
+
   build_dev:
     name: Build Development
     runs-on: ubuntu-latest
