@@ -1,8 +1,9 @@
 ARG IMAGE_BASE=ubuntu
 ARG IMAGE_VERSION=20.04
 ARG BUILDER_IMAGE
+ARG BUILDER_VERSION
 
-FROM ${IMAGE_BASE}:${IMAGE_VERSION}
+FROM ${IMAGE_BASE}:${IMAGE_VERSION} as base
 
 # Install Python runtime
 RUN apt-get update && \
@@ -13,16 +14,16 @@ RUN apt-get update && \
 WORKDIR /app
 
 # Copy the application source code and virtual environment from the build stage
-COPY --from=${BUILDER_IMAGE} /app /app
+COPY --from=${BUILDER_IMAGE}:${BUILDER_VERSION} /app /app
+
+# Set the user to use when running this image
+ARG APP_USER=codespace
+RUN useradd -m ${APP_USER}
+USER ${APP_USER}
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
 ENV PATH="/app/venv/bin:$PATH"
-
-# Set the user to use when running this image
-ARG APP_USER=codespace
-RUN useradd -m -d /app -s /bin/bash $APP_USER
-USER $APP_USER
 
 # Run tests
 CMD ["pytest", "--disable-warnings"]

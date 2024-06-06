@@ -1,23 +1,27 @@
 ARG IMAGE_BASE=alpine
 ARG IMAGE_VERSION=3.20.0
 ARG BUILDER_IMAGE
+ARG BUILDER_VERSION
 
-FROM ${IMAGE_BASE}:${IMAGE_VERSION}
+FROM ${IMAGE_BASE}:${IMAGE_VERSION} as base
+
+# Install Python runtime
+RUN apk add --no-cache python3
 
 # Set the working directory
 WORKDIR /app
 
 # Copy the application source code and virtual environment from the build stage
-COPY --from=${BUILDER_IMAGE} /app /app
+COPY --from=${BUILDER_IMAGE}:${BUILDER_VERSION} /app /app
+
+# Set the user to use when running this image
+ARG APP_USER=codespace
+RUN adduser -D ${APP_USER}
+USER ${APP_USER}
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
 ENV PATH="/app/venv/bin:$PATH"
 
-# Set the user to use when running this image
-ARG APP_USER=codespace
-RUN adduser -D -h /app $APP_USER
-USER $APP_USER
-
 # Run the application
-CMD ["python3", "main.py"]
+CMD ["python3", "app/main.py"]
