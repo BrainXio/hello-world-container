@@ -96,7 +96,7 @@ jobs:
         with:
           context: .
           file: Dockerfile.build-${{ matrix.image_base }}
-          target: build
+          target: builder
           push: false
           platforms: linux/amd64,linux/arm64
           build-args: |
@@ -152,9 +152,9 @@ jobs:
     needs: workflow_info
     if: |
       github.event_name == 'pull_request' && 
-      (startsWith(github.ref, 'refs/heads/hotfix/') || 
-      startsWith(github.ref, 'refs/heads/bugfix/') || 
-      startsWith(github.ref, 'refs/heads/release/'))
+      (startsWith(github.head_ref, 'hotfix/') || 
+      startsWith(github.head_ref, 'bugfix/') || 
+      startsWith(github.head_ref, 'release/'))
     strategy:
       matrix:
         image_base: [alpine, ubuntu]
@@ -196,7 +196,7 @@ jobs:
         with:
           context: .
           file: Dockerfile.build-${{ matrix.image_base }}
-          target: build
+          target: builder
           push: false
           platforms: linux/amd64,linux/arm64
           build-args: |
@@ -290,7 +290,7 @@ jobs:
         with:
           context: .
           file: Dockerfile.build-${{ matrix.image_base }}
-          target: build
+          target: builder
           push: false
           platforms: linux/amd64,linux/arm64
           build-args: |
@@ -357,8 +357,8 @@ jobs:
 
       - name: Git Config
         run: |
-          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
-          git config --global user.name "BrainXio CI"
+          git config --global user.email "actions@github.com"
+          git config --global user.name "Github Actions"
 
       - name: Create Changelog
         run: |

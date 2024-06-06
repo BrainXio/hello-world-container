@@ -21,7 +21,7 @@ ENV PYTHONUNBUFFERED=1
 ENV PATH="/app/venv/bin:$PATH"
 
 # Copy the application source code and virtual environment from the build stage
-COPY --from=build /app /app
+COPY --from=builder /app /app
 
 # Set the user to use when running this image
 USER ${APP_USER}
