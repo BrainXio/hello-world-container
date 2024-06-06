@@ -27,7 +27,7 @@ This template repository includes Dockerfiles tailored for a simple "Hello World
 
 ## Usage
 
-1. **Clone Repository:** Clone this template repository to kickstart your container project: `git clone https://github.com/your-username/Hello-World-Container.git`
+1. **Clone Repository:** Clone this template repository to kickstart your container project: `git clone https://github.com/BrainXio/Hello-World-Container.git`
 
 2. **Customize Dockerfiles:** Choose the appropriate Dockerfile based on your requirements and customize it according to your project specifications.
 
@@ -37,7 +37,7 @@ This template repository includes Dockerfiles tailored for a simple "Hello World
 
 ## Getting Started
 
-1. Clone the repository: `git clone https://github.com/your-username/Hello-World-Container.git`
+1. Clone the repository: `git clone https://github.com/BrainXio/Hello-World-Container.git`
 
 2. Customize Dockerfiles and CI/CD logic based on your project requirements.
 
