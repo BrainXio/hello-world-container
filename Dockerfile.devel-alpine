@@ -3,7 +3,8 @@ ARG IMAGE_VERSION=3.20.0
 ARG BUILDER_IMAGE
 ARG BUILDER_VERSION
 
-FROM ${IMAGE_BASE}:${IMAGE_VERSION} as base
+FROM ${BUILDER_IMAGE}:${BUILDER_VERSION} as base
+FROM ${IMAGE_BASE}:${IMAGE_VERSION} as final
 
 # Install Python runtime and development tools
 RUN apk add --no-cache python3 gcc musl-dev
@@ -12,7 +13,7 @@ RUN apk add --no-cache python3 gcc musl-dev
 WORKDIR /app
 
 # Copy the application source code and virtual environment from the build stage
-COPY --from=${BUILDER_IMAGE}:${BUILDER_VERSION} /app /app
+COPY --from=base /app /app
 
 # Set the user to use when running this image
 ARG APP_USER=codespace
