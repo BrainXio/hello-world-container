@@ -1,0 +1,22 @@
+# Dockerfile.build-ubuntu
+
+ARG IMAGE_BASE=ubuntu
+ARG IMAGE_VERSION=20.04
+
+FROM ${IMAGE_BASE}:${IMAGE_VERSION} as build
+
+# Install Python and build dependencies
+RUN apt-get update && apt-get install -y python3-dev python3-pip build-essential && rm -rf /var/lib/apt/lists/*
+
+# Set the working directory
+WORKDIR /app
+
+# Create a virtual environment
+RUN python3 -m venv venv
+
+# Activate virtual environment and install dependencies
+COPY requirements.txt .
+RUN . venv/bin/activate && pip install --no-cache-dir -r requirements.txt
+
+# Copy the application source code
+COPY src/ .
