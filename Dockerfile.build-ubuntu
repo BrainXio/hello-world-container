@@ -12,8 +12,7 @@ RUN apt-get update && \
 WORKDIR /app
 
 # Create a virtual environment
-RUN python3 -m venv venv \
-    && pip3 install --upgrade-pip
+RUN python3 -m venv venv
 
 # Activate virtual environment and install dependencies
 COPY requirements.txt .
