@@ -74,7 +74,7 @@ jobs:
         run: |
           BRANCH=$(echo "${GITHUB_REF_NAME}" | sed 's/\//-/g' | tr '[:upper:]' '[:lower:]')
           SHORT_SHA=$(echo "${GITHUB_SHA}" | head -c 7)
-          IMAGE_TAG="${{ matrix.image_base }}-${{ matrix.image_version }}-builder-${BRANCH}-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}-${SHORT_SHA}"
+          IMAGE_TAG="${{ matrix.image_base }}-${{ matrix.image_version }}-builder-${BRANCH}-${SHORT_SHA}-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}"
           echo "IMAGE_TAG=${IMAGE_TAG}" >> $GITHUB_ENV
           echo "BUILDER_IMAGE_TAG=${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:${IMAGE_TAG}" >> $GITHUB_ENV
 
@@ -120,8 +120,8 @@ jobs:
           message: |
             🛠 **Builder Details**
 
-            🏷️ Image Tag: `$(echo "$(echo "${GITHUB_REF_NAME}" | sed 's/\//-/g' | tr '[:upper:]' '[:lower:]')-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}-$(echo "${GITHUB_SHA}" | head -c 7)-${{ matrix.image_base }}-${{ matrix.image_version }}")`
-            🐳 Builder Image Tag: `${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:$(echo "$(echo "${GITHUB_REF_NAME}" | sed 's/\//-/g' | tr '[:upper:]' '[:lower:]')-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}-$(echo "${GITHUB_SHA}" | head -c 7)-${{ matrix.image_base }}-${{ matrix.image_version }}")-builder`
+            🏷️ Image Tag: `${{ env.IMAGE_TAG }}`
+            🐳 Builder Image Tag: `${{ env.BUILDER_IMAGE_TAG }}`
             📦 Outcome: ${{ job.status }}
 
             ⚡️ *Sending this message via GitHub Actions from your friendly inter-web bot*
