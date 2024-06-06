@@ -93,7 +93,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: Dockerfile.builder
+          file: Dockerfile.build-${{ matrix.image_base }}
           target: build
           push: false
           platforms: linux/amd64,linux/arm64
@@ -106,7 +106,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: Dockerfile.final
+          file: Dockerfile.final-${{ matrix.image_base }}
           push: true
           platforms: linux/amd64,linux/arm64
           build-args: |
@@ -187,7 +187,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: Dockerfile.builder
+          file: Dockerfile.build-${{ matrix.image_base }}
           target: build
           push: false
           platforms: linux/amd64,linux/arm64
@@ -200,7 +200,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: Dockerfile.final
+          file: Dockerfile.final-${{ matrix.image_base }}
           push: true
           platforms: linux/amd64,linux/arm64
           build-args: |
@@ -255,8 +255,8 @@ jobs:
 
       - name: Git Config
         run: |
-          git config --global user.email "actions@github.com"
-          git config --global user.name "Github Actions"
+          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+          git config --global user.name "BrainXio CI"
 
       - name: Create Changelog
         run: |
