@@ -3,7 +3,7 @@
 ARG IMAGE_BASE=ubuntu
 ARG IMAGE_VERSION=20.04
 
-FROM ${IMAGE_BASE}:${IMAGE_VERSION} AS ubuntu-builder
+FROM ${IMAGE_BASE}:${IMAGE_VERSION} AS build
 
 # Install Python and build dependencies
 RUN apt-get update && \

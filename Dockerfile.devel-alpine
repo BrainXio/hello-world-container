@@ -3,7 +3,7 @@
 ARG IMAGE_BASE=alpine-builder
 ARG IMAGE_VERSION=latest
 
-FROM ${IMAGE_BASE}:${IMAGE_VERSION} AS devel-alpine
+FROM ${IMAGE_BASE}:${IMAGE_VERSION} AS devel
 
 ARG APP_USER=codespace
 
@@ -21,7 +21,7 @@ ENV PYTHONUNBUFFERED=1
 ENV PATH="/app/venv/bin:$PATH"
 
 # Copy the application source code and virtual environment from the build stage
-COPY --from=alpine-builder /app /app
+COPY --from=build /app /app
 
 # Set the user to use when running this image
 USER ${APP_USER}
