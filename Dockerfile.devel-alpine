@@ -3,7 +3,7 @@
 ARG IMAGE_BASE=alpine-builder
 ARG IMAGE_VERSION=latest
 
-FROM ${IMAGE_BASE}:${IMAGE_VERSION} AS devel
+FROM ${IMAGE_BASE}:${IMAGE_VERSION}
 
 ARG APP_USER=codespace
 
@@ -15,6 +15,9 @@ RUN addgroup -S appgroup && adduser -S ${APP_USER} -G appgroup
 
 # Set the working directory
 WORKDIR /app
+
+# Copy the application source code and virtual environment from the builder stage
+COPY --from=alpine-builder /app /app
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
