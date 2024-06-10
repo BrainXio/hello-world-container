@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Send Telegram
-        uses: brainxio/telegram-bot-action@v1
+        uses: brainxio/telegram-bot-action@v2
         with:
           bot_token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           chat_id: ${{ secrets.TELEGRAM_CHAT_ID }}
@@ -113,7 +113,7 @@ jobs:
           path: builder_image_tag_${{ matrix.image_base }}_${{ matrix.image_version }}.txt
 
       - name: Send Telegram
-        uses: brainxio/telegram-bot-action@v1
+        uses: brainxio/telegram-bot-action@v2
         with:
           bot_token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           chat_id: ${{ secrets.TELEGRAM_CHAT_ID }}
@@ -220,7 +220,7 @@ jobs:
 
       - name: Report Build Outcome
         if: always()
-        uses: brainxio/telegram-bot-action@v1
+        uses: brainxio/telegram-bot-action@v2
         with:
           bot_token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           chat_id: ${{ secrets.TELEGRAM_CHAT_ID }}
@@ -327,7 +327,7 @@ jobs:
 
       - name: Report Build Outcome
         if: always()
-        uses: brainxio/telegram-bot-action@v1
+        uses: brainxio/telegram-bot-action@v2
         with:
           bot_token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           chat_id: ${{ secrets.TELEGRAM_CHAT_ID }}
@@ -427,7 +427,7 @@ jobs:
 
       - name: Report Build Outcome
         if: always()
-        uses: brainxio/telegram-bot-action@v1
+        uses: brainxio/telegram-bot-action@v2
         with:
           bot_token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           chat_id: ${{ secrets.TELEGRAM_CHAT_ID }}
@@ -485,7 +485,7 @@ jobs:
 
       - name: Report Changelog Outcome
         if: always()
-        uses: brainxio/telegram-bot-action@v1
+        uses: brainxio/telegram-bot-action@v2
         with:
           bot_token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           chat_id: ${{ secrets.TELEGRAM_CHAT_ID }}
@@ -523,7 +523,7 @@ jobs:
 
       - name: Report Dev Release Outcome
         if: always()
-        uses: brainxio/telegram-bot-action@v1
+        uses: brainxio/telegram-bot-action@v2
         with:
           bot_token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           chat_id: ${{ secrets.TELEGRAM_CHAT_ID }}
@@ -552,7 +552,7 @@ jobs:
 
       - name: Report Prod Release Outcome
         if: always()
-        uses: brainxio/telegram-bot-action@v1
+        uses: brainxio/telegram-bot-action@v2
         with:
           bot_token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           chat_id: ${{ secrets.TELEGRAM_CHAT_ID }}
